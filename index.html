@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Викторина по ИВТ</title>
+    <meta
+      name="description"
+      content="Интерактивная командная викторина по информатике"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Russo+One&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- ═══════════════════════════════════════════════════
+       ЭКРАН 1: ГЛАВНОЕ МЕНЮ
+  ═══════════════════════════════════════════════════ -->
+    <div id="screen-menu" class="screen active">
+      <div class="stars" id="stars"></div>
+      <div class="menu-content">
+        <div class="menu-logo">
+          <span class="logo-icon">🖥️</span>
+          <h1 class="menu-title">Викторина</h1>
+          <p class="menu-subtitle">по информатике</p>
+        </div>
+        <button id="btn-start-setup" class="btn btn-primary btn-glow">
+          <span>Начать</span>
+          <span class="btn-arrow">→</span>
+        </button>
+        <div class="menu-decoration">
+          <span>01001001 01010110 01010100</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+       ЭКРАН 2: НАСТРОЙКА (количество команд + имена)
+  ═══════════════════════════════════════════════════ -->
+    <div id="screen-setup" class="screen">
+      <div class="setup-container">
+        <button id="btn-back-to-menu" class="btn btn-ghost btn-back">
+          ← Назад
+        </button>
+        <h2 class="setup-title">Настройка игры</h2>
+
+        <div class="setup-card" id="card-count">
+          <label class="setup-label" for="team-count-input">
+            <span class="label-icon">👥</span>
+            Количество команд:
+          </label>
+          <div class="count-input-wrap">
+            <button
+              class="count-btn"
+              id="btn-count-minus"
+              aria-label="Уменьшить"
+            >
+              −
+            </button>
+            <input
+              type="number"
+              id="team-count-input"
+              class="count-input"
+              min="1"
+              max="8"
+              value="2"
+              placeholder="2"
+            />
+            <button
+              class="count-btn"
+              id="btn-count-plus"
+              aria-label="Увеличить"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <div id="teams-list" class="teams-list"></div>
+
+        <button
+          id="btn-start-game"
+          class="btn btn-primary btn-glow"
+          style="display: none"
+        >
+          <span>Начать игру!</span>
+          <span class="btn-arrow">🚀</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+       ЭКРАН 3: ИГРОВОЕ ПОЛЕ (таблица вопросов)
+  ═══════════════════════════════════════════════════ -->
+    <div id="screen-game" class="screen">
+      <div class="game-header">
+        <h2 class="game-title">🖥️ Викторина по ИВТ</h2>
+      </div>
+
+      <div class="game-content-area">
+        <div id="scoreboard-left" class="scoreboard-side"></div>
+        
+        <div class="board-column">
+          <div class="board-wrap">
+            <table class="question-board" id="question-board">
+              <!-- Заполняется JS -->
+            </table>
+          </div>
+          <div class="board-controls">
+            <button id="btn-end-game" class="btn btn-ghost btn-end-game" title="Завершить игру">🛑 Завершить игру</button>
+          </div>
+        </div>
+
+        <div id="scoreboard-right" class="scoreboard-side"></div>
+      </div>
+
+      <div class="current-team-bar" id="current-team-bar">
+        <span class="turn-label">Ход команды: </span><span id="current-team-name">—</span>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+       МОДАЛЬНОЕ ОКНО: ВОПРОС
+  ═══════════════════════════════════════════════════ -->
+    <div id="modal-question" class="modal-overlay" aria-hidden="true">
+      <div class="modal-box question-modal">
+        <div class="modal-header">
+          <span id="modal-category" class="modal-category"></span>
+          <span id="modal-points-badge" class="modal-points-badge"></span>
+        </div>
+        <p id="modal-question-text" class="modal-question-text"></p>
+
+        <div id="answer-section" class="answer-section">
+          <div id="options-grid" class="options-grid">
+            <!-- Варианты ответов — заполняется JS -->
+          </div>
+          <div
+            id="answer-result"
+            class="answer-result"
+            style="display: none"
+          ></div>
+        </div>
+
+        <div id="answer-reveal" class="answer-reveal" style="display: none">
+          <p class="reveal-label">Правильный ответ:</p>
+          <p id="reveal-text" class="reveal-text"></p>
+        </div>
+
+        <div class="modal-actions">
+          <button
+            id="btn-correct"
+            class="btn btn-correct"
+            style="display: none"
+          >
+            ✅ Верно (+очки)
+          </button>
+          <button id="btn-wrong" class="btn btn-wrong" style="display: none">
+            ❌ Неверно (0)
+          </button>
+          <button
+            id="btn-close-modal"
+            class="btn btn-ghost"
+            style="display: none"
+          >
+            Закрыть
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+       МОДАЛЬНОЕ ОКНО: КОНЕЦ ИГРЫ
+  ═══════════════════════════════════════════════════ -->
+    <div id="modal-end" class="modal-overlay" aria-hidden="true">
+      <div class="modal-box end-modal">
+        <div class="end-trophy">🏆</div>
+        <h2 class="end-title">Игра завершена!</h2>
+        <div id="end-results" class="end-results"></div>
+        <button id="btn-restart" class="btn btn-primary btn-glow">
+          Вернуться в меню
+        </button>
+      </div>
+    </div>
+
+    <!-- Скрытые заглушки для обратной совместимости JS -->
+    <button id="btn-check-answer" style="display:none;" aria-hidden="true"></button>
+    <input id="answer-input" style="display:none;" aria-hidden="true" />
+
+    <script src="script.js"></script>
+  </body>
+</html>

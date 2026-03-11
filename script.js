@@ -1,4 +1,4 @@
-// v2.2 — Добавлена кнопка полноэкранного режима, поддержка 6+ тем, скрыт скроллбар
+// v2.9 — Кнопки +/- для таймера, защита ввода таймера от не-чисел
 
 /* ═══════════════════════════════════════════════════════
    БАЗА ДАННЫХ ВОПРОСОВ
@@ -106,7 +106,11 @@ let state = {
   currentTeamIdx: 0,
   questions: {},
   activeQuestion: null,
+  timerSec: 0,
 };
+
+let questionTimer = null;
+let currentRemainingSec = 0;
 
 /* ═══════════════════════════════════════════════════════
    УТИЛИТЫ
@@ -284,6 +288,16 @@ function renderScoreboard() {
 
   const half = Math.ceil(state.teams.length / 2);
 
+  window.editingTeamIdx = -1;
+  window.openScoreEditModal = function(i) {
+    window.editingTeamIdx = i;
+    const team = state.teams[i];
+    $("score-edit-team-name").textContent = team.name;
+    $("score-edit-team-name").style.color = team.color;
+    $("score-edit-input").value = "10";
+    openModal("modal-score-edit");
+  };
+
   state.teams.forEach((team, i) => {
     const chip = document.createElement("div");
     chip.classList.add("score-chip");
@@ -300,6 +314,8 @@ function renderScoreboard() {
       <span class="score-value">${team.score}</span>
     `;
     
+    chip.addEventListener("click", () => window.openScoreEditModal(i));
+
     if (i < half) {
       if (leftBoard) leftBoard.appendChild(chip);
     } else {
@@ -336,8 +352,50 @@ function openQuestionModal(category, points) {
   $("btn-wrong").style.display = "none";
   $("btn-close-modal").style.display = "none";
 
+  if (state.timerSec > 0) {
+    $("timer-container").style.display = "flex";
+    currentRemainingSec = state.timerSec;
+    updateTimerUI();
+    questionTimer = setInterval(tickTimer, 1000);
+  } else {
+    $("timer-container").style.display = "none";
+  }
+
   renderOptions(qData.options, qData.answer);
   openModal("modal-question");
+}
+
+function stopTimer() {
+  if (questionTimer) clearInterval(questionTimer);
+  questionTimer = null;
+}
+
+function tickTimer() {
+  currentRemainingSec--;
+  updateTimerUI();
+  if (currentRemainingSec <= 0) {
+    stopTimer();
+    timeIsUp();
+  }
+}
+
+function updateTimerUI() {
+  $("timer-text").textContent = currentRemainingSec;
+  const pct = Math.max(0, (currentRemainingSec / state.timerSec) * 100);
+  $("timer-bar").style.width = pct + "%";
+  if (pct > 50) $("timer-bar").style.background = "var(--correct)";
+  else if (pct > 20) $("timer-bar").style.background = "var(--accent)";
+  else $("timer-bar").style.background = "var(--wrong)";
+}
+
+function timeIsUp() {
+  document.querySelectorAll(".option-btn").forEach((b) => { b.disabled = true; });
+  const resultEl = $("answer-result");
+  resultEl.style.display = "block";
+  resultEl.className = "answer-result wrong";
+  resultEl.textContent = "⏱ Время вышло! Ведущий решает:";
+  $("btn-correct").style.display = "inline-flex";
+  $("btn-wrong").style.display = "inline-flex";
 }
 
 function renderOptions(options, correctAnswer) {
@@ -358,6 +416,8 @@ function renderOptions(options, correctAnswer) {
 
 function selectOption(chosen, correct, clickedBtn) {
   if (!state.activeQuestion) return;
+
+  stopTimer();
 
   document.querySelectorAll(".option-btn").forEach((b) => { b.disabled = true; });
 
@@ -434,17 +494,25 @@ function showEndModal() {
   const endResults = $("end-results");
   endResults.innerHTML = "";
 
-  const medals = ["🥇", "🥈", "🥉"];
+  const medals = ["🥇", "🥈", "🥉", "4.", "5.", "6.", "7.", "8."];
+
+  let currentRank = 1;
+  let lastScore = null;
 
   sorted.forEach((team, i) => {
+    if (lastScore !== null && team.score < lastScore) {
+      currentRank++;
+    }
+    lastScore = team.score;
+
     const row = document.createElement("div");
     row.classList.add("end-result-row");
-    if (i === 0) row.classList.add("winner");
+    if (currentRank === 1) row.classList.add("winner");
     row.style.borderLeftColor = team.color;
     row.style.borderLeftWidth = "4px";
 
     row.innerHTML = `
-      <span class="end-rank">${medals[i] || i + 1 + "."}</span>
+      <span class="end-rank">${medals[currentRank - 1] || currentRank + "."}</span>
       <span class="end-name" style="color:${team.color}">${team.name}</span>
       <span class="end-score">${team.score} очков</span>
     `;
@@ -475,6 +543,7 @@ function startGame() {
   state.currentTeamIdx = 0;
   state.questions = cloneQuestions();
   state.activeQuestion = null;
+  state.timerSec = parseInt($("timer-input").value, 10) || 0;
 
   buildBoard();
   renderScoreboard();
@@ -532,6 +601,37 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  $("timer-input").addEventListener("input", () => {
+    let v = parseInt($("timer-input").value, 10);
+    if (isNaN(v)) v = 0;
+    v = Math.max(0, Math.min(300, v));
+    $("timer-input").value = v;
+  });
+
+  $("btn-timer-minus").addEventListener("click", () => {
+    let v = parseInt($("timer-input").value, 10);
+    if (isNaN(v)) v = 0;
+    if (v >= 3) {
+      $("timer-input").value = v - 3;
+      $("timer-input").dispatchEvent(new Event("input"));
+    } else if (v > 0) {
+      $("timer-input").value = 0;
+      $("timer-input").dispatchEvent(new Event("input"));
+    }
+  });
+
+  $("btn-timer-plus").addEventListener("click", () => {
+    let v = parseInt($("timer-input").value, 10);
+    if (isNaN(v)) v = 0;
+    if (v <= 297) {
+      $("timer-input").value = v + 3;
+      $("timer-input").dispatchEvent(new Event("input"));
+    } else if (v < 300) {
+      $("timer-input").value = 300;
+      $("timer-input").dispatchEvent(new Event("input"));
+    }
+  });
+
   $("team-count-input").addEventListener("keydown", (e) => {
     if (e.key === "Enter") renderTeamInputs(getTeamCount());
   });
@@ -546,9 +646,29 @@ document.addEventListener("DOMContentLoaded", () => {
   $("btn-wrong").addEventListener("click", () => awardPoints(false));
 
   $("btn-close-modal").addEventListener("click", () => {
+    stopTimer();
     closeModal("modal-question");
     state.activeQuestion = null;
   });
+
+  $("btn-cancel-question").addEventListener("click", () => {
+    stopTimer();
+    closeModal("modal-question");
+    state.activeQuestion = null;
+  });
+
+  // ── Редактирование очков ─────────────────────
+  $("btn-close-score-edit").addEventListener("click", () => closeModal("modal-score-edit"));
+  const changeScore = (add) => {
+    if (window.editingTeamIdx === -1) return;
+    const val = parseInt($("score-edit-input").value, 10) || 0;
+    if (add) state.teams[window.editingTeamIdx].score += val;
+    else state.teams[window.editingTeamIdx].score -= val;
+    renderScoreboard();
+    closeModal("modal-score-edit");
+  };
+  $("btn-score-add").addEventListener("click", () => changeScore(true));
+  $("btn-score-sub").addEventListener("click", () => changeScore(false));
 
   // ── Финальный модал ───────────────────────────
   $("btn-restart").addEventListener("click", () => {

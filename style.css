@@ -1059,3 +1059,66 @@ body {
   color: #fff;
   line-height: 1;
 }
+
+/* ─── TIMER AND SCORE EDIT ───────────────────────── */
+.timer-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 4px 0 12px;
+}
+.timer-bar-wrap {
+  flex: 1;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.timer-bar {
+  height: 100%;
+  width: 100%;
+  background: var(--correct);
+  transition: width 1s linear, background-color 0.3s;
+}
+.timer-text {
+  font-family: "Russo One", sans-serif;
+  font-size: 20px;
+  color: #fff;
+  min-width: 32px;
+  text-align: right;
+}
+
+.btn-close-corner {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  font-size: 24px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  z-index: 10;
+}
+.btn-close-corner:hover {
+  background: var(--wrong);
+  color: #fff;
+  border-color: var(--wrong);
+  transform: scale(1.1);
+}
+
+.score-chip {
+  cursor: pointer;
+}
+.score-chip:hover {
+  border-color: var(--accent);
+  background: rgba(108, 99, 255, 0.15);
+}

@@ -17,13 +17,14 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <button id="btn-fullscreen" class="btn btn-ghost" style="position: fixed; top: 24px; right: 24px; z-index: 9999; font-size: 24px; width: 48px; height: 48px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%;" title="Полноэкранный/Оконный режим">
+      ⛶
+    </button>
+
     <!-- ═══════════════════════════════════════════════════
        ЭКРАН 1: ГЛАВНОЕ МЕНЮ
   ═══════════════════════════════════════════════════ -->
     <div id="screen-menu" class="screen active">
-      <button id="btn-fullscreen" class="btn btn-ghost" style="position: absolute; top: 24px; right: 24px; z-index: 100; font-size: 24px; width: 48px; height: 48px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%;" title="Полноэкранный/Оконный режим">
-        ⛶
-      </button>
       <div class="stars" id="stars"></div>
       <div class="menu-content">
         <div class="menu-logo">
@@ -83,6 +84,39 @@
           </div>
         </div>
 
+        <div class="setup-card" id="card-timer">
+          <label class="setup-label" for="timer-input">
+            <span class="label-icon">⏱️</span>
+            Время на ответ (сек):
+            <span style="font-size: 13px; font-weight:normal; margin-left:8px; color:var(--text-muted);">(0 - без таймера)</span>
+          </label>
+          <div class="count-input-wrap">
+            <button
+              class="count-btn"
+              id="btn-timer-minus"
+              aria-label="Уменьшить"
+            >
+              −
+            </button>
+            <input
+              type="number"
+              id="timer-input"
+              class="count-input"
+              min="0"
+              max="300"
+              value="15"
+              oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+            />
+            <button
+              class="count-btn"
+              id="btn-timer-plus"
+              aria-label="Увеличить"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
         <div id="teams-list" class="teams-list"></div>
 
         <button
@@ -130,12 +164,20 @@
        МОДАЛЬНОЕ ОКНО: ВОПРОС
   ═══════════════════════════════════════════════════ -->
     <div id="modal-question" class="modal-overlay" aria-hidden="true">
-      <div class="modal-box question-modal">
+      <div class="modal-box question-modal" style="position: relative;">
+        <button id="btn-cancel-question" class="btn-close-corner" title="Отменить выбор (случайный клик)">&times;</button>
         <div class="modal-header">
           <span id="modal-category" class="modal-category"></span>
           <span id="modal-points-badge" class="modal-points-badge"></span>
         </div>
         <p id="modal-question-text" class="modal-question-text"></p>
+
+        <div id="timer-container" class="timer-container" style="display: none;">
+          <div class="timer-bar-wrap">
+            <div id="timer-bar" class="timer-bar"></div>
+          </div>
+          <div id="timer-text" class="timer-text">15</div>
+        </div>
 
         <div id="answer-section" class="answer-section">
           <div id="options-grid" class="options-grid">
@@ -171,6 +213,26 @@
           >
             Закрыть
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+       МОДАЛЬНОЕ ОКНО: РЕДАКТИРОВАНИЕ ОЧКОВ
+  ═══════════════════════════════════════════════════ -->
+    <div id="modal-score-edit" class="modal-overlay" aria-hidden="true">
+      <div class="modal-box score-edit-modal" style="position: relative; max-width: 400px; text-align: center;">
+        <button id="btn-close-score-edit" class="btn-close-corner">&times;</button>
+        <h3 style="font-family: 'Russo One', sans-serif; font-size: 24px; color: var(--accent-2); margin-top: 8px;">Изменить очки</h3>
+        <p id="score-edit-team-name" style="font-weight: 700; font-size: 18px; margin: 8px 0 20px;">Команда</p>
+        
+        <div class="count-input-wrap" style="justify-content: center; margin-bottom: 24px;">
+          <input type="number" id="score-edit-input" class="count-input" value="10" min="1" max="999" />
+        </div>
+        
+        <div class="modal-actions">
+          <button id="btn-score-add" class="btn btn-correct">➕ Прибавить</button>
+          <button id="btn-score-sub" class="btn btn-wrong">➖ Отнять</button>
         </div>
       </div>
     </div>
